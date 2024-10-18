@@ -1,5 +1,20 @@
 import { MongoClient } from "https://deno.land/x/mongo@v0.32.0/mod.ts";
+import { format } from "https://deno.land/std@0.91.0/datetime/mod.ts";
 
+abstract class Logger {
+    public static log(msg: string) {
+        console.log(format(new Date(), "yyyy-MM-dd HH:mm:ss"), "|", msg);
+    }
+
+    public static error(msg: string, ...errs: unknown[]) {
+        console.error(
+            format(new Date(), "yyyy-MM-dd HH:mm:ss"),
+            "|",
+            msg,
+            ...errs,
+        );
+    }
+}
 interface Item {
     id: string;
     name: string;
@@ -10,7 +25,7 @@ interface Item {
 
 const MONGO_CONNECTION_URI = Deno.env.get("MONGO_CONNECTION_URI");
 if (!MONGO_CONNECTION_URI) {
-    console.error("Missing MONGO_CONNECTION_URI in env vars");
+    Logger.error("Missing MONGO_CONNECTION_URI in env vars");
     Deno.exit(1);
 }
 
@@ -42,27 +57,30 @@ async function fetchItems(): Promise<Array<Item> | null> {
         });
 
         if (!response.ok) {
-            console.error("Error fetching items:", response.statusText);
+            Logger.error("Error fetching items:");
             return null;
         }
 
         const data = await response.json();
 
         if (data.errors) {
-            console.error(
+            Logger.error(
                 "Errors fetching items from tarkov.dev:",
                 data.errors,
             );
             return null;
         }
 
-        console.log("Items fetched");
+        Logger.log("Items fetched");
 
         return data.data.items.filter((item: Item) =>
             item.lastLowPrice !== null
         );
     } catch (error) {
-        console.error("Fetch failed:", error);
+        Logger.error(
+            "Fetch failed:",
+            error,
+        );
         return null;
     }
 }
@@ -78,9 +96,12 @@ async function insertItems(items: Array<Item>) {
                 )
             ),
         );
-        console.log(`${items.length} items upserted`);
+        Logger.log(`${items.length} items upserted`);
     } catch (error) {
-        console.error("Error inserting items:", error);
+        Logger.error(
+            "Error inserting items:",
+            error,
+        );
     }
 }
 
@@ -88,7 +109,9 @@ const items = await fetchItems();
 if (items) {
     await insertItems(items);
 } else {
-    console.error("No items fetched, skipping...");
+    Logger.error(
+        "No items fetched, skipping...",
+    );
 }
 
 client.close();
