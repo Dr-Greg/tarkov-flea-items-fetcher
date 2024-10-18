@@ -22,7 +22,7 @@ A Deno script that fetches Escape from Tarkov items from the [api.tarkov.dev](ht
 2. Set up environment variables:
    - Create a `.env` file with the following:
      ```bash
-     MONGODB_URI=your_mongodb_connection_string
+     echo MONGODB_URI=your_mongodb_connection_string > .env
      ```
 
 3. Install the required dependencies:
