@@ -37,12 +37,13 @@ const collection = db.collection<Item>("items");
 async function fetchItems(): Promise<Array<Item> | null> {
     const query = `
     query {
-      items {
+      items(lang: en, types: [barter, container, glasses, grenade, headphones, injectors, mods, pistolGrip, suppressor]) {
         id
         name
         shortName
         basePrice
         lastLowPrice
+        types
       }
     }
   `;
